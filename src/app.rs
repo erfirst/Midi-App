@@ -706,3 +706,108 @@ fn download_blob(bytes: Vec<u8>, filename: &str) {
     document.body().unwrap().remove_child(&a).ok();
     web_sys::Url::revoke_object_url(&url).ok();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use midly::{Smf, Header, Timing, Format, Track, TrackEvent, TrackEventKind, MidiMessage, MetaMessage};
+    use midly::num::{u7, u15, u24};
+
+    #[test]
+    fn parse_midi_to_pianoroll_basic() {
+        let header = Header { format: Format::SingleTrack, timing: Timing::Metrical(u15::from(480u16)) };
+        let mut track = Track::new();
+        track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::Tempo(u24::from(500_000u32))) });
+        track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Midi { channel: 0.into(), message: MidiMessage::NoteOn { key: u7::from(60u8), vel: u7::from(100u8) } } });
+        track.push(TrackEvent { delta: 10.into(), kind: TrackEventKind::Midi { channel: 0.into(), message: MidiMessage::NoteOff { key: u7::from(60u8), vel: u7::from(0u8) } } });
+        track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::EndOfTrack) });
+
+        let smf = Smf { header, tracks: vec![track] };
+
+        let mut app = MidiApp::default();
+        app.midi_data = Some(smf);
+        app.parse_midi_to_pianoroll();
+
+        assert_eq!(app.tempo, 120);
+        assert_eq!(app.piano_roll.ticks_per_quarter, 480usize);
+        assert_eq!(app.piano_roll.notes.len(), 1);
+        let n = &app.piano_roll.notes[0];
+        assert_eq!(n.pitch, 60);
+        assert_eq!(n.velocity, 100);
+        assert_eq!(n.start_time, 0);
+        assert_eq!(n.end_time, 10);
+        assert_eq!(app.piano_roll.length, 11);
+    }
+
+    #[test]
+    fn export_to_vec_roundtrip() {
+        let roll = PianoRoll {
+            tempo: 120,
+            ticks_per_quarter: 480,
+            notes: vec![Note { pitch: 60, velocity: 100, start_time: 0, end_time: 10 }],
+            length: 11,
+        };
+
+        let bytes = roll.export_to_vec().expect("export failed");
+        let parsed = midly::Smf::parse(&bytes).expect("parse failed");
+        // header timing
+        match parsed.header.timing {
+            midly::Timing::Metrical(t) => assert_eq!(t.as_int(), 480u16),
+            _ => panic!("expected metrical timing"),
+        }
+
+        let track = &parsed.tracks[0];
+        assert!(track.len() >= 3); // note on, note off, end of track
+        // first event: tempo or note-on depending on how midly wrote it; find NoteOn and NoteOff
+        let mut found_on = false;
+        let mut found_off = false;
+        let mut time_acc = 0u32;
+        for ev in track {
+            time_acc += ev.delta.as_int();
+            if let TrackEventKind::Midi { message, .. } = &ev.kind {
+                match message {
+                    MidiMessage::NoteOn { key, vel } => {
+                        assert_eq!(key.as_int(), 60);
+                        assert_eq!(vel.as_int(), 100);
+                        // time_acc should equal start_time i.e., 0
+                        assert_eq!(time_acc, 0);
+                        found_on = true;
+                    }
+                    MidiMessage::NoteOff { key, vel } => {
+                        assert_eq!(key.as_int(), 60);
+                        assert_eq!(vel.as_int(), 0);
+                        // time_acc should equal end_time i.e., 10
+                        assert_eq!(time_acc, 10);
+                        found_off = true;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        assert!(found_on && found_off, "did not find both NoteOn and NoteOff");
+    }
+
+    #[test]
+    fn parse_noteon_with_zero_vel_as_noteoff() {
+        let header = Header { format: Format::SingleTrack, timing: Timing::Metrical(u15::from(480u16)) };
+        let mut track = Track::new();
+        track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Midi { channel: 0.into(), message: MidiMessage::NoteOn { key: u7::from(60u8), vel: u7::from(100u8) } } });
+        // NoteOff represented as NoteOn with vel == 0
+        track.push(TrackEvent { delta: 10.into(), kind: TrackEventKind::Midi { channel: 0.into(), message: MidiMessage::NoteOn { key: u7::from(60u8), vel: u7::from(0u8) } } });
+        track.push(TrackEvent { delta: 0.into(), kind: TrackEventKind::Meta(MetaMessage::EndOfTrack) });
+
+        let smf = Smf { header, tracks: vec![track] };
+
+        let mut app = MidiApp::default();
+        app.midi_data = Some(smf);
+        app.parse_midi_to_pianoroll();
+
+        assert_eq!(app.piano_roll.notes.len(), 1);
+        let n = &app.piano_roll.notes[0];
+        assert_eq!(n.pitch, 60);
+        assert_eq!(n.velocity, 100);
+        assert_eq!(n.start_time, 0);
+        assert_eq!(n.end_time, 10);
+    }
+}
+

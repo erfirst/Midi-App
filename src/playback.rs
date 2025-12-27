@@ -256,3 +256,14 @@ mod wasm {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn player_new_and_stop_noop() {
+        let mut p = Player::new();
+        p.stop(); // should be a no-op and not panic
+    }
+}
