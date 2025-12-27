@@ -1,4 +1,4 @@
-# Ethan First HW 3: Midi Reader and Editor
+# Midi Reader and Editor
 
 ## Description
 A midi reader, player and editor made in Rust. Can be compiled on multiple build targets including web.
