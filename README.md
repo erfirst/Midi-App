@@ -1,76 +1,26 @@
-# eframe template
+# Ethan First HW 3: Midi Reader and Editor
 
-[![dependency status](https://deps.rs/repo/github/emilk/eframe_template/status.svg)](https://deps.rs/repo/github/emilk/eframe_template)
-[![Build Status](https://github.com/emilk/eframe_template/workflows/CI/badge.svg)](https://github.com/emilk/eframe_template/actions?workflow=CI)
+## Description
+A midi reader, player and editor made in Rust. Can be compiled on multiple build targets including web.
 
-This is a template repo for [eframe](https://github.com/emilk/egui/tree/master/crates/eframe), a framework for writing apps using [egui](https://github.com/emilk/egui/).
+## Demo
+A demo is currently available on [My Website](https://ethanfirst.com/midi.html)
 
-The goal is for this to be the simplest way to get started writing a GUI app in Rust.
+## Installation
+The program must be built from source. Cross-Compilation from source is not currently an option because MIDIR requires platform specific system libraries. 
 
-You can compile your app natively or for the web, and share it using Github Pages.
+### To build from source:
+1. ensure rust is properly installed [Instructions](https://rust-lang.org)
+2. enter directory ~\hw4-template\
+3. run `cargo build --release`
+4. the executable for the platform of choice should be found in ~\hw4-template\target\release
 
-## Getting started
+### For web execution:
+1. ensure rust is properly installed [Instructions](https://rust-lang.org)
+2. enter directory ~\hw4-template\
+3. build the web source by running `trunk build` or use `trunk build --release` to build a folder that can be uploaded to a hosting service
+4. if the first command was used, run `trunk serve` from the hw4-template folder. This should open a local server on `http://127.0.0.1:8080/index.html#dev`
 
-Start by clicking "Use this template" at https://github.com/emilk/eframe_template/ or follow [these instructions](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template).
-
-Change the name of the crate: Chose a good name for your project, and change the name to it in:
-* `Cargo.toml`
-    * Change the `package.name` from `eframe_template` to `your_crate`.
-    * Change the `package.authors`
-* `main.rs`
-    * Change `eframe_template::TemplateApp` to `your_crate::TemplateApp`
-* `index.html`
-    * Change the `<title>eframe template</title>` to `<title>your_crate</title>`. optional.
-* `assets/sw.js`
-  * Change the `'./eframe_template.js'` to `./your_crate.js` (in `filesToCache` array)
-  * Change the `'./eframe_template_bg.wasm'` to `./your_crate_bg.wasm` (in `filesToCache` array)
-
-### Learning about egui
-
-`src/app.rs` contains a simple example app. This is just to give some inspiration - most of it can be removed if you like.
-
-The official egui docs are at <https://docs.rs/egui>. If you prefer watching a video introduction, check out <https://www.youtube.com/watch?v=NtUkr_z7l84>. For inspiration, check out the [the egui web demo](https://emilk.github.io/egui/index.html) and follow the links in it to its source code.
-
-### Testing locally
-
-Make sure you are using the latest version of stable rust by running `rustup update`.
-
-`cargo run --release`
-
-On Linux you need to first run:
-
-`sudo apt-get install libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev`
-
-On Fedora Rawhide you need to run:
-
-`dnf install clang clang-devel clang-tools-extra libxkbcommon-devel pkg-config openssl-devel libxcb-devel gtk3-devel atk fontconfig-devel`
-
-### Web Locally
-
-You can compile your app to [WASM](https://en.wikipedia.org/wiki/WebAssembly) and publish it as a web page.
-
-We use [Trunk](https://trunkrs.dev/) to build for web target.
-1. Install the required target with `rustup target add wasm32-unknown-unknown`.
-2. Install Trunk with `cargo install --locked trunk`.
-3. Run `trunk serve` to build and serve on `http://127.0.0.1:8080`. Trunk will rebuild automatically if you edit the project.
-4. Open `http://127.0.0.1:8080/index.html#dev` in a browser. See the warning below.
-
-> `assets/sw.js` script will try to cache our app, and loads the cached version when it cannot connect to server allowing your app to work offline (like PWA).
-> appending `#dev` to `index.html` will skip this caching, allowing us to load the latest builds during development.
-
-### Web Deploy
-1. Just run `trunk build --release`.
-2. It will generate a `dist` directory as a "static html" website
-3. Upload the `dist` directory to any of the numerous free hosting websites including [GitHub Pages](https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
-4. we already provide a workflow that auto-deploys our app to GitHub pages if you enable it.
-> To enable Github Pages, you need to go to Repository -> Settings -> Pages -> Source -> set to `gh-pages` branch and `/` (root).
->
-> If `gh-pages` is not available in `Source`, just create and push a branch called `gh-pages` and it should be available.
-
-You can test the template app at <https://emilk.github.io/eframe_template/>.
-
-## Updating egui
-
-As of 2023, egui is in active development with frequent releases with breaking changes. [eframe_template](https://github.com/emilk/eframe_template/) will be updated in lock-step to always use the latest version of egui.
-
-When updating `egui` and `eframe` it is recommended you do so one version at the time, and read about the changes in [the egui changelog](https://github.com/emilk/egui/blob/master/CHANGELOG.md) and [eframe changelog](https://github.com/emilk/egui/blob/master/crates/eframe/CHANGELOG.md).
+## Usage
+On web, drag and drop a file to listen or modify it. Locally, you can use the GUI buttons on the main menu.
+Notes can be clicked on to be added or removed. Once you are done you can press exit and the save button will save an exported midi to the same location as where an uploaded file.
