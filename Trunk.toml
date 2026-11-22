@@ -1,1 +1,4 @@
 [build]
+# Use relative URLs so the built `dist/` folder works from any path on a
+# website (e.g. https://example.com/midi/), not only from the domain root.
+public_url = "./"
