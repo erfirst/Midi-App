@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# This scripts runs various CI-like checks in a convenient way.
+# Runs the same checks as CI.
 set -eux
 
-cargo check --workspace --all-targets
-cargo check --workspace --all-features --lib --target wasm32-unknown-unknown
 cargo fmt --all -- --check
-cargo clippy --workspace --all-targets --all-features --  -D warnings -W clippy::all
-cargo test --workspace --all-targets --all-features
-cargo test --workspace --doc
-trunk build
+cargo clippy --all-targets -- -D warnings
+cargo clippy --target wasm32-unknown-unknown -- -D warnings
+cargo test
+trunk build --release

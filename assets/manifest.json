@@ -1,6 +1,6 @@
 {
-  "name": "egui Template PWA",
-  "short_name": "egui-template-pwa",
+  "name": "Midi App: MIDI Player & Editor",
+  "short_name": "Midi App",
   "icons": [
     {
       "src": "./icon-256.png",
@@ -20,9 +20,8 @@
     }
   ],
   "lang": "en-US",
-  "id": "/index.html",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "white",
-  "theme_color": "white"
+  "background_color": "#1b1b1b",
+  "theme_color": "#1b1b1b"
 }

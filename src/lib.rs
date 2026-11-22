@@ -1,7 +1,7 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
-extern crate epaint;
-
 mod app;
+pub mod midi;
 mod playback;
+
 pub use app::MidiApp;

@@ -1,26 +1,79 @@
 # Midi Reader and Editor
 
-## Description
-A midi reader, player and editor made in Rust. Can be compiled on multiple build targets including web.
+A MIDI player and piano-roll editor written in Rust with [egui](https://github.com/emilk/egui).
+It runs as a desktop app and in the browser (WebAssembly).
 
-## Demo
-A demo is currently available on [My Website](https://ethanfirst.com/midi.html)
+Demo: [ethanfirst.com/midi.html](https://ethanfirst.com/midi.html)
 
-## Installation
-The program must be built from source. Cross-Compilation from source is not currently an option because MIDIR requires platform specific system libraries. 
+## Features
 
-### To build from source:
-1. ensure rust is properly installed [Instructions](https://rust-lang.org)
-2. enter directory ~\hw4-template\
-3. run `cargo build --release`
-4. the executable for the platform of choice should be found in ~\hw4-template\target\release
+- Open `.mid` files with the **Open** button, or drag and drop them onto the window.
+- A full 128-key piano roll with note names, bar numbers and per-channel colors.
+- Playback with a moving playhead that follows along.
+  - **Web:** a built-in synthesizer (Web Audio).
+  - **Desktop:** sends notes to your first MIDI output device (on Windows this is the
+    built-in "Microsoft GS Wavetable Synth").
+- Editing:
+  - **Click** an empty spot to add a note. Snap and default note length are in the toolbar.
+  - **Click** a note (or right-click it) to delete it.
+  - **Drag** a note to move it, or drag its right edge to resize it.
+  - **Drag** empty space to pan.
+- Save or download your edits as a `.mid` file. Tempo, channels and timing are preserved.
+- Undo and redo.
 
-### For web execution:
-1. ensure rust is properly installed [Instructions](https://rust-lang.org)
-2. enter directory ~\hw4-template\
-3. build the web source by running `trunk build` or use `trunk build --release` to build a folder that can be uploaded to a hosting service
-4. if the first command was used, run `trunk serve` from the hw4-template folder. This should open a local server on `http://127.0.0.1:8080/index.html#dev`
+### Controls
 
-## Usage
-On web, drag and drop a file to listen or modify it. Locally, you can use the GUI buttons on the main menu.
-Notes can be clicked on to be added or removed. Once you are done you can press exit and the save button will save an exported midi to the same location as where an uploaded file.
+| Action | Shortcut |
+| --- | --- |
+| Play / stop | `Space` |
+| Jump to start | `Home` |
+| Move playhead | Click or drag the bar ruler |
+| Undo / redo | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` |
+| Open / save | `Ctrl+O` / `Ctrl+S` |
+| Scroll | Mouse wheel (`Shift`+wheel scrolls sideways) |
+| Zoom | `Ctrl`+wheel, pinch, or the Zoom slider |
+
+## Building
+
+You need Rust 1.95 or newer (`rustup update`).
+
+### Desktop
+
+```sh
+cargo run --release
+```
+
+On Linux you'll need a few system packages first:
+
+```sh
+sudo apt-get install pkg-config libasound2-dev libxkbcommon-dev libwayland-dev libdbus-1-dev
+```
+
+### Web
+
+```sh
+rustup target add wasm32-unknown-unknown
+cargo install --locked trunk
+trunk serve            # dev server at http://127.0.0.1:8080
+trunk build --release  # production build into ./dist
+```
+
+## Putting it on your website
+
+1. Run `trunk build --release`.
+2. Upload **everything** in `dist/` to a folder on your site, for example `/midi/`.
+   The build uses relative paths (see `Trunk.toml`), so any folder works.
+3. Link to it (`https://yoursite.com/midi/`) or embed it in another page:
+
+   ```html
+   <iframe src="/midi/" style="width:100%;height:80vh;border:0" allow="autoplay"></iframe>
+   ```
+
+Make sure your web server sends `.wasm` files with the `application/wasm` MIME type.
+GitHub Pages, Netlify, Vercel, Cloudflare Pages and most Apache/nginx setups already do this.
+If you're updating an old deployment, upload the new `index.html` together with its
+matching `midi_app-*.js` and `*_bg.wasm` files, and delete the old ones.
+
+## Development
+
+`./check.sh` runs the same checks as CI: formatting, clippy (native and wasm), tests and a web build.
